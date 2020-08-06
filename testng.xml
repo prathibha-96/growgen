@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+
+<listeners>
+	<!-- <listener class-name="com.growgen.qa.listeners.AllureListener"></listener>
+	<listener class-name="com.growgen.qa.listeners.ExtentReportListener"></listener>
+	<listener class-name="com.growgen.qa.listeners.MyTransformer"></listener> -->
+</listeners>
+
+  <test name="Test">
+    <classes>
+     <class name="com.growgen.qa.testcases.LoginPageTest"/>
+      <class name="com.growgen.qa.testcases.HomePageTest"/>
+     <class name="com.growgen.qa.testcases.GrowLightsPageTest"></class>
+     
+    </classes>
+  </test> <!-- Test -->
+  
+</suite> <!-- Suite -->
