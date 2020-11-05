@@ -22,14 +22,13 @@ import com.growgen.qa.base.BasePage;
 
 public class ExtentReportListener extends BasePage implements ITestListener
 {
+public static final String OUTPUT_FOLDER = "./builder/";
+	public static final String FILE_NAME = "TestExecutionReport.html";
 
-	private static final String OUTPUT_FOLDER = "./builder/";
-	private static final String FILE_NAME = "TestExecutionReport.html";
-
-	private static ExtentReports extent = init();
+	public static ExtentReports extent = init();
 	public static ThreadLocal<ExtentTest> test = new ThreadLocal<ExtentTest>();
 
-	private static ExtentReports init() {
+	public static ExtentReports init() {
 
 		Path path = Paths.get(OUTPUT_FOLDER);
 		// if directory exists?
@@ -42,7 +41,7 @@ public class ExtentReportListener extends BasePage implements ITestListener
 			}
 		}
 		ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(OUTPUT_FOLDER + FILE_NAME);
-		htmlReporter.config().setDocumentTitle("Automation Test Results");
+		htmlReporter.config().setDocumentTitle("GrowGen Reports");
 		htmlReporter.config().setReportName("Automation Test Results");
 		htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
 		htmlReporter.config().setTheme(Theme.STANDARD);
@@ -50,6 +49,8 @@ public class ExtentReportListener extends BasePage implements ITestListener
 		extent = new ExtentReports();
 		extent.attachReporter(htmlReporter);
 		extent.setReportUsesManualConfiguration(true);
+		extent.setSystemInfo("OS", "Windows10");
+		extent.setSystemInfo("HostName", "LocalHost");
 
 		return extent;
 	}
@@ -86,39 +87,37 @@ public class ExtentReportListener extends BasePage implements ITestListener
 	}
 
 	public synchronized void onTestSuccess(ITestResult result) {
-		System.out.println((result.getMethod().getMethodName() + " passed!"));
-		test.get().pass("Test passed");
-		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
+//		System.out.println((result.getMethod().getMethodName() + " passed!"));
+//		test.get().pass("Test passed");
+//		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
+		String logText = "<b>Test Method " + result.getMethod().getMethodName() + " Successful</b>";
+		Markup m = MarkupHelper.createLabel(logText, ExtentColor.GREEN);
+		test.get().log(Status.PASS, m);
 	}
 
 	public synchronized void onTestFailure(ITestResult result) {
-		System.out.println((result.getMethod().getMethodName() + " failed!"));
+	//	System.out.println((result.getMethod().getMethodName() + " failed!"));
+		
+		String logText = "<b>Test Method " +  result.getMethod().getMethodName()  + " Failed</b>";
+		Markup m = MarkupHelper.createLabel(logText, ExtentColor.RED);
+		test.get().log(Status.FAIL, m);
+		String exceptionMessage = Arrays.toString(result.getThrowable().getStackTrace());
+		test.get().fail("<details><summary><b><font color=red>" +
+						"Exception Occured, click to see details:"+ "</font></b></summary>" +
+						exceptionMessage.replaceAll(",", "<br>") + "</details> \n");
 		try {
-			test.get().fail(result.getThrowable(),
+			test.get().fail("<b><font color=red>" + "Screenshot of failure" + "</font></b>",
 					MediaEntityBuilder.createScreenCaptureFromPath(getScreenshot()).build());
-		} catch (IOException e) {
-			System.err
-					.println("Exception thrown while updating test fail status " + Arrays.toString(e.getStackTrace()));
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException | InterruptedException e) {
+			test.get().fail("Test Failed, cannot attach screenshot");
 		}
-		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
+		
 	}
 
 	public synchronized void onTestSkipped(ITestResult result) {
-		System.out.println((result.getMethod().getMethodName() + " skipped!"));
-		try {
-			test.get().skip(result.getThrowable(),
-					MediaEntityBuilder.createScreenCaptureFromPath(getScreenshot()).build());
-		} catch (IOException e) {
-			System.err
-					.println("Exception thrown while updating test skip status " + Arrays.toString(e.getStackTrace()));
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		test.get().getModel().setEndTime(getTime(result.getEndMillis()));
+		String logText = "<b>Test Method " + result.getMethod().getMethodName() + " Skipped</b>";
+		Markup m = MarkupHelper.createLabel(logText, ExtentColor.YELLOW);
+		test.get().log(Status.SKIP, m);
 	}
 
 	public synchronized void onTestFailedButWithinSuccessPercentage(ITestResult result) {
@@ -130,6 +129,7 @@ public class ExtentReportListener extends BasePage implements ITestListener
 		calendar.setTimeInMillis(millis);
 		return calendar.getTime();
 	}
+
 
 
 }
